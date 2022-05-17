@@ -1,0 +1,3 @@
+aiogram~=2.20
+Telethon~=1.24.0
+aiosqlite~=0.17.0
