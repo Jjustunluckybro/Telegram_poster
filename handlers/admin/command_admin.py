@@ -12,6 +12,7 @@ async def command_admin(message: types.Message):
     await message.answer(text='Hay admin!', reply_markup=admin_menu_inkb)
     await message.delete()
 
+
 def register_command_admin(dispatcher: Dispatcher):
 
     dispatcher.register_message_handler(command_admin,

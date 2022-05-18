@@ -1,5 +1,5 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
-class AddFSM(StatesGroup):
-    post = State()
+class TestFSMAdmin(StatesGroup):
+    test = State()

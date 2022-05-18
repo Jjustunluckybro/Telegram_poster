@@ -1,8 +1,11 @@
 import sqlite3
 import aiosqlite
 
+
 class DataTool:
-    """Singleton class to interactions with database """
+    """
+    Singleton class to interactions with database
+    """
 
     __instance = None
 
@@ -57,7 +60,6 @@ class DataTool:
         except aiosqlite.IntegrityError:
             return False
 
-    # TODO: Need test
     async def get_activity(self, user_id: int) -> bool:
         """Return current user activity"""
         await self.__connect()
@@ -67,7 +69,6 @@ class DataTool:
         activity = activity[0]
         return bool(activity)
 
-    # TODO: Need test
     async def change_activity(self, user_id: int) -> bool:
         """Change user activity and return current user activity"""
         await self.__connect()
@@ -80,7 +81,6 @@ class DataTool:
             await self.__base.commit()
             return True
 
-    # TODO: Need test
     async def get_readable_channels(self, user_id: int) -> tuple | None:
         """
         Return user readable channels as tuple of channels id
@@ -91,13 +91,12 @@ class DataTool:
 
         channels = await self.__cursor.execute('SELECT readable_channels FROM data WHERE id == ?', (user_id,))
         channels = await channels.fetchone()
-        if channels[0] is None:
-            return channels[0]
+        if (channels is None) or (channels[0] is None):
+            return None
         else:
             channels = channels[0].split('_')
             return tuple(channels)
 
-    # TODO: Need test
     async def get_id_and_readable_channels(self):
         """
         :return: in dict{key: user_id, value: [readable_channels]}
@@ -126,7 +125,6 @@ class DataTool:
         ids_channels = dict(ids_channels)
         return ids_channels
 
-    # TODO: Need test
     async def clear_readable_channels(self, user_id: int):
         """Set user readable channels as None"""
         await self.__connect()
@@ -139,7 +137,6 @@ class DataTool:
         await self.__cursor.execute('UPDATE data SET readable_channels == ? WHERE id == ?', (None, user_id))
         await self.__base.commit()
 
-    # TODO: Need test
     async def add_chanel_to_readable_channels(self, user_id: int, channel_id: int) -> bool:
         """
         Add new chanel to user readable_channels
@@ -175,7 +172,6 @@ class DataTool:
         await self.__add_subscribers(user_id=user_id, group_id=int(channel_id))
         return True
 
-    # TODO: Need test
     async def remove_chanel_from_readable_channels(self, user_id: int, chanel_id: int) -> bool:
         """
         Remove channel from user readable_channels in database
@@ -215,7 +211,6 @@ class DataTool:
         except ValueError:
             return False
 
-    # TODO: Need test
     async def get_forwarding_group(self, user_id: int) -> int | None:
         """
         Return from bd user forwarding_group
@@ -234,7 +229,6 @@ class DataTool:
 
         return int(forwarding_group)
 
-    # TODO: Need test
     async def clear_forwarding_group(self, user_id: int):
         """Set in db user forwarding_group as None"""
         await self.__connect()
@@ -244,7 +238,6 @@ class DataTool:
         )
         await self.__base.commit()
 
-    # TODO: Need test
     async def set_forwarding_group(self, user_id: int, group_id) -> bool:
         """
         Set new group in bd to bot forwarding new posts
@@ -268,7 +261,6 @@ class DataTool:
         await self.__base.commit()
         return True
 
-    # TODO: Need test
     async def add_to_groups_names(self, group_id: int, name: str, subscribed_users: list | None = None) -> bool:
         """
         Add new (id, name, subscribed_users) to table group_names in bd
@@ -291,7 +283,6 @@ class DataTool:
         except sqlite3.IntegrityError:
             return False
 
-    # TODO: Need test
     async def get_group_name_by_id(self, group_id: int) -> str | None:
         """
         :return: group name as str, if no id in bd -> return None
@@ -305,7 +296,6 @@ class DataTool:
         except TypeError:
             return None
 
-    # TODO: Need test
     async def get_grop_id_by_name(self, name: str) -> tuple | None:
         """
         :return: group ids in tuple, if no name in bd -> return None
@@ -321,7 +311,6 @@ class DataTool:
         except TypeError:
             return None
 
-    # TODO: Need test
     async def delete_from_data(self, user_id):
         await self.__connect()
 
@@ -330,7 +319,6 @@ class DataTool:
         )
         await self.__base.commit()
 
-    # TODO: Need test
     async def delete_from_groups_name(self, group_id):
         await self.__connect()
 
@@ -339,7 +327,6 @@ class DataTool:
         )
         await self.__base.commit()
 
-    # TODO: Need test
     async def get_subscribers(self, group_id: int) -> tuple | None:
         """ return all users' id in int, who reading this group"""
         await self.__connect()
@@ -348,16 +335,18 @@ class DataTool:
             'SELECT subscribed_users FROM groups_names WHERE id == ?', (group_id,)
         )
         subscribers = await subscribers.fetchone()
-        subscribers = subscribers[0]
+        if subscribers is None:
+            return None
+        else:
+            subscribers = subscribers[0]
 
         if subscribers is None:
             return None
+        else:
+            subscribers = subscribers.split('_')
+            subscribers = [int(user) for user in subscribers]
+            return tuple(subscribers)
 
-        subscribers = subscribers.split('_')
-        subscribers = [int(user) for user in subscribers]
-        return tuple(subscribers)
-
-    # TODO: Need test
     async def __add_subscribers(self, user_id: int, group_id: int) -> bool:
         """
         Add user to group subscribers
@@ -393,7 +382,6 @@ class DataTool:
             await self.__base.commit()
             return True
 
-    # TODO: Need test
     async def __remove_subscriber(self, user_id: int, group_id: int) -> bool:
         """
         Remove user id from subscribed_users in database
@@ -433,7 +421,6 @@ class DataTool:
         except ValueError:
             return False
 
-    # TODO: Need test
     async def get_all_id_from_data(self) -> tuple:
         await self.__connect()
 
@@ -445,7 +432,6 @@ class DataTool:
         ids = tuple(ids)
         return ids
 
-    # TODO: Need test
     async def get_groups_names(self, in_dict: bool = False) -> list | dict:
         """
         :param in_dict: If true, return dict {key:group_id, value: name}
@@ -457,25 +443,6 @@ class DataTool:
         if in_dict:
             bd = dict(bd)
         return bd
-
-    # TODO: Need test
-    async def get_all_active_subscribers(self, group_id: int) -> tuple | None:
-        """
-        :return: tuple of int users ids, whom active and subscribe group with param 'group_id'
-                 If no users matching the conditions, return 'None'
-        """
-        await self.__connect()
-
-        subscribers = await self.get_subscribers(group_id=group_id)
-        if subscribers is None:
-            return None
-
-        active_subscribers: list = []
-        for sub_id in subscribers:
-            if await self.get_activity(user_id=sub_id):
-                active_subscribers.append(sub_id)
-
-        return tuple(active_subscribers)
 
     async def get_all_active_subscribers_and_forwarding_group(self, group_id: int) -> dict | None:
         """
@@ -496,4 +463,3 @@ class DataTool:
                 subscriber_forwarding_group[sub_id] = forwarding_group
 
         return subscriber_forwarding_group
-

@@ -1,13 +1,14 @@
 from aiogram import executor
+
 from create_bot import dp
+
 import handlers
-from states.states_handlers.register_states_handlers import register_states_handlers
+import states
 
 
 def on_startup():
-
+    states.register_all_states_handlers.register_all_states_handlers(dispatcher=dp)
     handlers.register_handlers.register_handlers(dispatcher=dp)
-    register_states_handlers(dispatcher=dp)
 
 
 if __name__ == '__main__':
